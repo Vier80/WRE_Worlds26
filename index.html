@@ -127,7 +127,7 @@
 
                 <div id="tab-excel" class="space-y-4">
                     <h4 class="font-bold text-gray-700">Carica il file Excel degli Eventi</h4>
-                    <p class="text-xs text-gray-500">Colonne richieste: <span class="font-semibold text-themeBlue">Data, Sport, Evento, Picking #A, Picking #B, Picking #C, Picking #field, Resumé A, Resumé B, Resumé C, Numero Field, Punti A, Punti B, Punti C, Punti Field</span></p>
+                    <p class="text-xs text-gray-500">Colonne richieste: <span class="font-semibold text-themeBlue">Data, Sport, Evento, Picking #A, Picking #B, Picking #C, Picking #field, Achievement A, Achievement B, Achievement C, Numero Field, Punti A, Punti B, Punti C, Punti Field</span></p>
                     <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-themeBlue hover:file:bg-blue-100">
                     <button onclick="handleExcelUpload()" class="bg-themeBlue text-white font-bold px-4 py-2 rounded shadow text-sm hover:bg-themeDark transition">Elabora e Pubblica Eventi</button>
                 </div>
@@ -351,9 +351,9 @@
                     B: row['Picking #B'] || row['Picking B'] || row['B'] || 'Atleta B mancante',
                     C: row['Picking #C'] || row['Picking C'] || row['C'] || 'Atleta C mancante',
                     field: row['Picking #field'] || row['Picking field'] || row['field'] || 'Field mancante',
-                    resumeA: row['Resumé A'] || '',
-                    resumeB: row['Resumé B'] || '',
-                    resumeC: row['Resumé C'] || '',
+                    achievementA: row['Achievement A'] || '',
+                    achievementB: row['Achievement B'] || '',
+                    achievementC: row['Achievement C'] || '',
                     numField: row['Numero Field'] || '',
                     puntiA: parseInt(row['Punti A']) || 15,
                     puntiB: parseInt(row['Punti B']) || 18,
@@ -411,21 +411,21 @@
                             <input type="radio" name="event_${ev.id}" value="A" ${preScelta === 'A' ? 'checked' : ''} ${disabledAttr} onchange="selectOption(${ev.id}, 'A', '${ev.A.replace(/'/g, "\\'")}')" class="text-themeBlue focus:ring-themeBlue mt-1">
                             <span class="text-sm">
                                 <strong class="text-gray-800">[A] ${ev.A}</strong><br>
-                                ${ev.resumeA ? `<span class="text-xs text-gray-500 italic block mt-1">${ev.resumeA}</span>` : ''}
+                                ${ev.achievementA ? `<span class="text-xs text-gray-500 italic block mt-1">${ev.achievementA}</span>` : ''}
                             </span>
                         </label>
                         <label class="${labelClass}">
                             <input type="radio" name="event_${ev.id}" value="B" ${preScelta === 'B' ? 'checked' : ''} ${disabledAttr} onchange="selectOption(${ev.id}, 'B', '${ev.B.replace(/'/g, "\\'")}')" class="text-themeBlue focus:ring-themeBlue mt-1">
                             <span class="text-sm">
                                 <strong class="text-gray-800">[B] ${ev.B}</strong><br>
-                                ${ev.resumeB ? `<span class="text-xs text-gray-500 italic block mt-1">${ev.resumeB}</span>` : ''}
+                                ${ev.achievementB ? `<span class="text-xs text-gray-500 italic block mt-1">${ev.achievementB}</span>` : ''}
                             </span>
                         </label>
                         <label class="${labelClass}">
                             <input type="radio" name="event_${ev.id}" value="C" ${preScelta === 'C' ? 'checked' : ''} ${disabledAttr} onchange="selectOption(${ev.id}, 'C', '${ev.C.replace(/'/g, "\\'")}')" class="text-themeBlue focus:ring-themeBlue mt-1">
                             <span class="text-sm">
                                 <strong class="text-gray-800">[C] ${ev.C}</strong><br>
-                                ${ev.resumeC ? `<span class="text-xs text-gray-500 italic block mt-1">${ev.resumeC}</span>` : ''}
+                                ${ev.achievementC ? `<span class="text-xs text-gray-500 italic block mt-1">${ev.achievementC}</span>` : ''}
                             </span>
                         </label>
                         <label class="${labelClass}">

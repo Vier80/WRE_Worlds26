@@ -127,7 +127,7 @@
 
                 <div id="tab-excel" class="space-y-4">
                     <h4 class="font-bold text-gray-700">Carica il file Excel degli Eventi</h4>
-                    <p class="text-xs text-gray-500">Colonne richieste: <span class="font-semibold text-themeBlue">Data, Sport, Evento, Picking #A, Picking #B, Picking #C, Picking #field, Achievement A, Achievement B, Achievement C, Numero Field, Punti A, Punti B, Punti C, Punti Field</span></p>
+                    <p class="text-xs text-gray-500">Colonne richieste: <span class="font-semibold text-themeBlue">Data, Sport, Evento, Picking #Ⲁ, Picking #β, Picking #γ, Picking #field, Achievement Ⲁ, Achievement β, Achievement γ, Numero Field, Punti Ⲁ, Punti β, Punti γ, Punti Field</span></p>
                     <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-themeBlue hover:file:bg-blue-100">
                     <button onclick="handleExcelUpload()" class="bg-themeBlue text-white font-bold px-4 py-2 rounded shadow text-sm hover:bg-themeDark transition">Elabora e Pubblica Eventi</button>
                 </div>
@@ -347,17 +347,17 @@
                     data: row['Data'] || row['data'] || 'Data mancante',
                     sport: row['Sport'] || row['sport'] || 'Sport',
                     evento: row['Evento'] || row['evento'] || `Evento ${index + 1}`,
-                    A: row['Picking #A'] || row['Picking A'] || row['A'] || 'Atleta A mancante',
-                    B: row['Picking #B'] || row['Picking B'] || row['B'] || 'Atleta B mancante',
-                    C: row['Picking #C'] || row['Picking C'] || row['C'] || 'Atleta C mancante',
+                    A: row['Picking #Ⲁ'] || row['Picking Ⲁ'] || 'Atleta Ⲁ mancante',
+                    B: row['Picking #β'] || row['Picking β'] || 'Atleta β mancante',
+                    C: row['Picking #γ'] || row['Picking γ'] || 'Atleta γ mancante',
                     field: row['Picking #field'] || row['Picking field'] || row['field'] || 'Field mancante',
-                    achievementA: row['Achievement A'] || '',
-                    achievementB: row['Achievement B'] || '',
-                    achievementC: row['Achievement C'] || '',
+                    achievementA: row['Achievement Ⲁ'] || '',
+                    achievementB: row['Achievement β'] || '',
+                    achievementC: row['Achievement γ'] || '',
                     numField: row['Numero Field'] || '',
-                    puntiA: parseInt(row['Punti A']) || 15,
-                    puntiB: parseInt(row['Punti B']) || 18,
-                    puntiC: parseInt(row['Punti C']) || 25,
+                    puntiA: parseInt(row['Punti Ⲁ']) || parseInt(row['Punti A']) || 15,
+                    puntiB: parseInt(row['Punti β']) || parseInt(row['Punti B']) || 18,
+                    puntiC: parseInt(row['Punti γ']) || parseInt(row['Punti C']) || 25,
                     puntiField: parseInt(row['Punti Field']) || 10
                 }));
 
@@ -408,23 +408,23 @@
                     <p class="text-xs text-gray-500 mb-2">Seleziona 1 sola opzione (i punteggi sono calcolati dal sistema):</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <label class="${labelClass}">
-                            <input type="radio" name="event_${ev.id}" value="A" ${preScelta === 'A' ? 'checked' : ''} ${disabledAttr} onchange="selectOption(${ev.id}, 'A', '${ev.A.replace(/'/g, "\\'")}')" class="text-themeBlue focus:ring-themeBlue mt-1">
+                            <input type="radio" name="event_${ev.id}" value="Ⲁ" ${preScelta === 'Ⲁ' ? 'checked' : ''} ${disabledAttr} onchange="selectOption(${ev.id}, 'Ⲁ', '${ev.A.replace(/'/g, "\\'")}')" class="text-themeBlue focus:ring-themeBlue mt-1">
                             <span class="text-sm">
-                                <strong class="text-gray-800">[A] ${ev.A}</strong><br>
+                                <strong class="text-gray-800">[Ⲁ] ${ev.A}</strong><br>
                                 ${ev.achievementA ? `<span class="text-xs text-gray-500 italic block mt-1">${ev.achievementA}</span>` : ''}
                             </span>
                         </label>
                         <label class="${labelClass}">
-                            <input type="radio" name="event_${ev.id}" value="B" ${preScelta === 'B' ? 'checked' : ''} ${disabledAttr} onchange="selectOption(${ev.id}, 'B', '${ev.B.replace(/'/g, "\\'")}')" class="text-themeBlue focus:ring-themeBlue mt-1">
+                            <input type="radio" name="event_${ev.id}" value="β" ${preScelta === 'β' ? 'checked' : ''} ${disabledAttr} onchange="selectOption(${ev.id}, 'β', '${ev.B.replace(/'/g, "\\'")}')" class="text-themeBlue focus:ring-themeBlue mt-1">
                             <span class="text-sm">
-                                <strong class="text-gray-800">[B] ${ev.B}</strong><br>
+                                <strong class="text-gray-800">[β] ${ev.B}</strong><br>
                                 ${ev.achievementB ? `<span class="text-xs text-gray-500 italic block mt-1">${ev.achievementB}</span>` : ''}
                             </span>
                         </label>
                         <label class="${labelClass}">
-                            <input type="radio" name="event_${ev.id}" value="C" ${preScelta === 'C' ? 'checked' : ''} ${disabledAttr} onchange="selectOption(${ev.id}, 'C', '${ev.C.replace(/'/g, "\\'")}')" class="text-themeBlue focus:ring-themeBlue mt-1">
+                            <input type="radio" name="event_${ev.id}" value="γ" ${preScelta === 'γ' ? 'checked' : ''} ${disabledAttr} onchange="selectOption(${ev.id}, 'γ', '${ev.C.replace(/'/g, "\\'")}')" class="text-themeBlue focus:ring-themeBlue mt-1">
                             <span class="text-sm">
-                                <strong class="text-gray-800">[C] ${ev.C}</strong><br>
+                                <strong class="text-gray-800">[γ] ${ev.C}</strong><br>
                                 ${ev.achievementC ? `<span class="text-xs text-gray-500 italic block mt-1">${ev.achievementC}</span>` : ''}
                             </span>
                         </label>
@@ -547,7 +547,7 @@
             docPdf.setFontSize(10);
             window.eventsData.forEach((ev) => {
                 const userSel = window.userSelections[ev.id];
-                const selText = userSel ? `[${userSel.key.toUpperCase()}] ${userSel.text}` : "Nessuna scelta";
+                const selText = userSel ? `[${userSel.key}] ${userSel.text}` : "Nessuna scelta";
                 
                 if(y > 270) {
                     docPdf.addPage();
@@ -623,9 +623,9 @@
                     <p class="font-bold text-sm mb-1">${ev.id}. ${ev.evento}</p>
                     <select id="correct_${ev.id}" class="w-full text-sm p-1 border rounded bg-white">
                         <option value="">-- Seleziona Risposta Corretta --</option>
-                        <option value="A">Picking A (Valore: ${ev.puntiA} pt): ${ev.A}</option>
-                        <option value="B">Picking B (Valore: ${ev.puntiB} pt): ${ev.B}</option>
-                        <option value="C">Picking C (Valore: ${ev.puntiC} pt): ${ev.C}</option>
+                        <option value="Ⲁ">Picking Ⲁ (Valore: ${ev.puntiA} pt): ${ev.A}</option>
+                        <option value="β">Picking β (Valore: ${ev.puntiB} pt): ${ev.B}</option>
+                        <option value="γ">Picking γ (Valore: ${ev.puntiC} pt): ${ev.C}</option>
                         <option value="field">Picking field (Valore: ${ev.puntiField} pt): ${ev.field}</option>
                     </select>
                 `;
@@ -685,9 +685,9 @@
                         // Cerca l'evento per recuperare i punti esatti
                         const evData = window.eventsData.find(e => e.id == evId);
                         if(evData) {
-                            if(correctChoice === 'A') score += evData.puntiA;
-                            if(correctChoice === 'B') score += evData.puntiB;
-                            if(correctChoice === 'C') score += evData.puntiC;
+                            if(correctChoice === 'Ⲁ') score += evData.puntiA;
+                            if(correctChoice === 'β') score += evData.puntiB;
+                            if(correctChoice === 'γ') score += evData.puntiC;
                             if(correctChoice === 'field') score += evData.puntiField;
                         }
                     }
@@ -748,7 +748,7 @@
             // --- FOGLIO 1: CALCOLATORE AUTOMATICO (CON FORMULE EXCEL AGGIORNATE) ---
             let dataCalc = [];
             let rigaNomiEventi = ["", ""];
-            let rigaRisposteEsatte = ["RISPOSTE ESATTE -->", "Scrivi qui A, B, C o field"];
+            let rigaRisposteEsatte = ["RISPOSTE ESATTE -->", "Scrivi qui Ⲁ, β, γ o field"];
             let rigaHeaderCalc = ["Nickname", "PUNTEGGIO TOTALE"];
 
             window.eventsData.forEach(ev => {
@@ -777,7 +777,7 @@
                     let cellRisposta = `${col}$2`;
                     
                     // Ora i punteggi vengono presi dinamicamente dall'evento corrente (non più fissi)
-                    let formula = `IF(Chiavi_Risposte!${cellDati}="","",IF(Chiavi_Risposte!${cellDati}=${cellRisposta},IF(${cellRisposta}="A",${ev.puntiA},IF(${cellRisposta}="B",${ev.puntiB},IF(${cellRisposta}="C",${ev.puntiC},IF(${cellRisposta}="field",${ev.puntiField},0)))),0))`;
+                    let formula = `IF(Chiavi_Risposte!${cellDati}="","",IF(Chiavi_Risposte!${cellDati}=${cellRisposta},IF(${cellRisposta}="Ⲁ",${ev.puntiA},IF(${cellRisposta}="β",${ev.puntiB},IF(${cellRisposta}="γ",${ev.puntiC},IF(${cellRisposta}="field",${ev.puntiField},0)))),0))`;
                     rigaGiocatore.push({ f: formula });
                 });
                 dataCalc.push(rigaGiocatore);
@@ -839,8 +839,8 @@
                 div.className = `p-2 rounded border ${isCorrect ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'}`;
                 div.innerHTML = `
                     <p class="font-bold text-xs text-gray-600">Evento #${evId}</p>
-                    <p class="text-sm">Scelta: <strong class="text-themeBlue">[${sel.key.toUpperCase()}]</strong> ${sel.text}</p>
-                    ${correct ? `<p class="text-xs ${isCorrect ? 'text-blue-600 font-bold' : 'text-red-500'}">Esatta era: [${correct.toUpperCase()}]</p>` : ''}
+                    <p class="text-sm">Scelta: <strong class="text-themeBlue">[${sel.key}]</strong> ${sel.text}</p>
+                    ${correct ? `<p class="text-xs ${isCorrect ? 'text-blue-600 font-bold' : 'text-red-500'}">Esatta era: [${correct}]</p>` : ''}
                 `;
                 content.appendChild(div);
             }

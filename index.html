@@ -127,7 +127,7 @@
 
                 <div id="tab-excel" class="space-y-4">
                     <h4 class="font-bold text-gray-700">Carica il file Excel degli Eventi</h4>
-                    <p class="text-xs text-gray-500">Assicurati di aver impostato le colonne correttamente (es: Punti Ⲁ, Punti β, Punti γ, Punti Field)</p>
+                    <p class="text-xs text-gray-500">Colonne richieste: <span class="font-semibold text-themeBlue">Data, Sport, Evento, Picking #Ⲁ, Picking #β, Picking #γ, Picking #field, Achievement Ⲁ, Achievement β, Achievement γ, Numero Field, Punti Ⲁ, Punti β, Punti γ, Punti Field</span></p>
                     <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-themeBlue hover:file:bg-blue-100">
                     <button onclick="handleExcelUpload()" class="bg-themeBlue text-white font-bold px-4 py-2 rounded shadow text-sm hover:bg-themeDark transition">Elabora e Pubblica Eventi</button>
                 </div>
@@ -321,28 +321,27 @@
             document.getElementById('action-section').classList.remove('hidden');
         }
 
-        // FUNZIONI ROBUSTE PER LEGGERE L'EXCEL IGNORANDO SPAZI ED ERRORI DI BATTITURA NELLE INTESTAZIONI
-        function getExcelValue(row, possibleKeys, defaultValue) {
-            const normalizedRow = {};
-            // Normalizziamo tutte le chiavi dell'excel (tutto minuscolo e senza spazi ai bordi)
+        // NUOVE FUNZIONI ROBUSTE: leggono ESATTAMENTE i nomi indicati, ignorando maiuscole/minuscole e spazi accidentali, ma senza fare "guessing" su altre colonne
+        function getExcelString(row, possibleKeys, defaultVal) {
             for (let k in row) {
-                normalizedRow[k.toString().trim().toLowerCase()] = row[k];
-            }
-            
-            // Cerchiamo la nostra chiave tra le opzioni possibili
-            for (let key of possibleKeys) {
-                let normKey = key.trim().toLowerCase();
-                if (normalizedRow[normKey] !== undefined && normalizedRow[normKey] !== null && normalizedRow[normKey] !== '') {
-                    return normalizedRow[normKey];
+                let cleanKey = k.toString().trim().toLowerCase();
+                if (possibleKeys.includes(cleanKey)) {
+                    return row[k].toString().trim();
                 }
             }
-            return defaultValue;
+            return defaultVal;
         }
 
         function getExcelPoints(row, possibleKeys, defaultVal) {
-            let val = getExcelValue(row, possibleKeys, defaultVal);
-            let parsed = parseInt(val);
-            return isNaN(parsed) ? defaultVal : parsed;
+            for (let k in row) {
+                let cleanKey = k.toString().trim().toLowerCase();
+                if (possibleKeys.includes(cleanKey)) {
+                    // sostituisco la virgola col punto per supportare i decimali italiani
+                    let val = parseFloat(row[k].toString().replace(',', '.'));
+                    return isNaN(val) ? defaultVal : val;
+                }
+            }
+            return defaultVal;
         }
 
         window.handleExcelUpload = async function() {
@@ -366,29 +365,29 @@
                     return;
                 }
 
-                // Costruiamo i dati degli eventi in modo estremamente flessibile
+                // Costruiamo i dati cercando SOLTANTO le esatte combinazioni permesse
                 window.eventsData = json.map((row, index) => {
                     return {
                         id: index + 1,
-                        data: getExcelValue(row, ['data'], 'Data mancante'),
-                        sport: getExcelValue(row, ['sport'], 'Sport'),
-                        evento: getExcelValue(row, ['evento'], `Evento ${index + 1}`),
+                        data: getExcelString(row, ['data'], 'Data mancante'),
+                        sport: getExcelString(row, ['sport'], 'Sport'),
+                        evento: getExcelString(row, ['evento'], `Evento ${index + 1}`),
                         
-                        A: getExcelValue(row, ['picking #Ⲁ', 'picking Ⲁ', 'picking #a', 'picking a'], 'Atleta Ⲁ mancante'),
-                        B: getExcelValue(row, ['picking #β', 'picking β', 'picking #b', 'picking b'], 'Atleta β mancante'),
-                        C: getExcelValue(row, ['picking #γ', 'picking γ', 'picking #c', 'picking c'], 'Atleta γ mancante'),
-                        field: getExcelValue(row, ['picking #field', 'picking field', 'field'], 'Field mancante'),
+                        A: getExcelString(row, ['picking #Ⲁ', 'picking #ⲁ', 'picking Ⲁ', 'picking ⲁ'], 'Atleta Ⲁ mancante'),
+                        B: getExcelString(row, ['picking #β', 'picking β'], 'Atleta β mancante'),
+                        C: getExcelString(row, ['picking #γ', 'picking γ'], 'Atleta γ mancante'),
+                        field: getExcelString(row, ['picking #field', 'picking field', 'field'], 'Field mancante'),
                         
-                        achievementA: getExcelValue(row, ['achievement Ⲁ', 'achievement a'], ''),
-                        achievementB: getExcelValue(row, ['achievement β', 'achievement b'], ''),
-                        achievementC: getExcelValue(row, ['achievement γ', 'achievement c'], ''),
+                        achievementA: getExcelString(row, ['achievement Ⲁ', 'achievement ⲁ'], ''),
+                        achievementB: getExcelString(row, ['achievement β'], ''),
+                        achievementC: getExcelString(row, ['achievement γ'], ''),
                         
-                        numField: getExcelValue(row, ['numero field', 'num field'], ''),
+                        numField: getExcelString(row, ['numero field', 'num field'], ''),
                         
-                        // Ora i punti verranno letti al 100%
-                        puntiA: getExcelPoints(row, ['punti Ⲁ', 'punti alfa', 'punti a'], 15),
-                        puntiB: getExcelPoints(row, ['punti β', 'punti beta', 'punti b'], 18),
-                        puntiC: getExcelPoints(row, ['punti γ', 'punti gamma', 'punti c'], 25),
+                        // Ora cerchiamo ESATTAMENTE la colonna dei punti indicata, senza ricadere in Punti A o simili
+                        puntiA: getExcelPoints(row, ['punti Ⲁ', 'punti ⲁ'], 15),
+                        puntiB: getExcelPoints(row, ['punti β'], 18),
+                        puntiC: getExcelPoints(row, ['punti γ'], 25),
                         puntiField: getExcelPoints(row, ['punti field'], 10)
                     };
                 });
@@ -428,7 +427,7 @@
 
             window.eventsData.forEach((ev) => {
                 let preScelta = window.userSelections[ev.id]?.key || null;
-                // Retrocompatibilità
+                // Gestione retrocompatibilità se qualcuno avesse salvato con A, B, C nel vecchio test
                 if(preScelta === 'A') preScelta = 'Ⲁ';
                 if(preScelta === 'B') preScelta = 'β';
                 if(preScelta === 'C') preScelta = 'γ';

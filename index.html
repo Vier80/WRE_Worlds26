@@ -127,7 +127,7 @@
 
                 <div id="tab-excel" class="space-y-4">
                     <h4 class="font-bold text-gray-700">Carica il file Excel degli Eventi</h4>
-                    <p class="text-xs text-gray-500">Colonne richieste: <span class="font-semibold text-themeBlue">Data, Sport, Evento, Picking #Ⲁ, Picking #β, Picking #γ, Picking #field, Achievement Ⲁ, Achievement β, Achievement γ, Numero Field, Punti Ⲁ, Punti β, Punti γ, Punti Field</span></p>
+                    <p class="text-xs text-gray-500">Assicurati di aver impostato le colonne correttamente (es: Punti Ⲁ, Punti β, Punti γ, Punti Field)</p>
                     <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-themeBlue hover:file:bg-blue-100">
                     <button onclick="handleExcelUpload()" class="bg-themeBlue text-white font-bold px-4 py-2 rounded shadow text-sm hover:bg-themeDark transition">Elabora e Pubblica Eventi</button>
                 </div>
@@ -152,8 +152,8 @@
                                 <tr class="bg-themeBlue text-white">
                                     <th class="p-2">Pos</th>
                                     <th class="p-2">Nickname</th>
-                                    <th class="p-2">Stato</th>
                                     <th class="p-2">Punteggio</th>
+                                    <th class="p-2">Stato</th>
                                     <th class="p-2 text-center">Azioni / Pronostici</th>
                                 </tr>
                             </thead>
@@ -666,10 +666,10 @@
                     <p class="font-bold text-sm mb-1">${ev.id}. ${ev.evento}</p>
                     <select id="correct_${ev.id}" class="w-full text-sm p-1 border rounded bg-white font-semibold">
                         <option value="">-- Seleziona Risposta Corretta --</option>
-                        <option value="Ⲁ">Picking Ⲁ (Valore: ${ev.puntiA} pt)</option>
-                        <option value="β">Picking β (Valore: ${ev.puntiB} pt)</option>
-                        <option value="γ">Picking γ (Valore: ${ev.puntiC} pt)</option>
-                        <option value="field">Picking field (Valore: ${ev.puntiField} pt)</option>
+                        <option value="Ⲁ">Picking Ⲁ (Valore: ${ev.puntiA} pt) - ${ev.A}</option>
+                        <option value="β">Picking β (Valore: ${ev.puntiB} pt) - ${ev.B}</option>
+                        <option value="γ">Picking γ (Valore: ${ev.puntiC} pt) - ${ev.C}</option>
+                        <option value="field">Picking field (Valore: ${ev.puntiField} pt) - ${ev.field}</option>
                     </select>
                 `;
                 container.appendChild(div);
@@ -772,8 +772,8 @@
                 tr.innerHTML = `
                     <td class="p-2 font-bold">#${idx + 1}</td>
                     <td class="p-2 font-semibold text-themeBlue">${p.nickname}</td>
-                    <td class="p-2">${isDraftStr}</td>
                     <td class="p-2 font-bold text-gray-800">${p.score} pt</td>
+                    <td class="p-2">${isDraftStr}</td>
                     <td class="p-2 text-center space-x-2">
                         <button onclick='showParticipantDetail(${JSON.stringify(p)})' class="bg-blue-100 text-themeBlue px-2 py-1 rounded text-xs font-bold hover:bg-blue-200 transition">👁️ Vedi</button>
                         <button onclick="deleteParticipant('${p.nickname}')" class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold hover:bg-red-200 transition">🗑️ Elimina</button>

@@ -127,7 +127,7 @@
 
                 <div id="tab-excel" class="space-y-4">
                     <h4 class="font-bold text-gray-700">Carica il file Excel degli Eventi</h4>
-                    <p class="text-xs text-gray-500">Colonne richieste: <span class="font-semibold text-themeBlue">Data, Sport, Evento, Picking #Ⲁ, Picking #β, Picking #γ, Picking #field, Achievement Ⲁ, Achievement β, Achievement γ, Numero Field, Punti Ⲁ, Punti β, Punti γ, Punti Field</span></p>
+                    <p class="text-xs text-gray-500">Assicurati di aver impostato le colonne correttamente (es: Punti Ⲁ, Punti β, Punti γ, Punti Field)</p>
                     <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-themeBlue hover:file:bg-blue-100">
                     <button onclick="handleExcelUpload()" class="bg-themeBlue text-white font-bold px-4 py-2 rounded shadow text-sm hover:bg-themeDark transition">Elabora e Pubblica Eventi</button>
                 </div>
@@ -321,15 +321,28 @@
             document.getElementById('action-section').classList.remove('hidden');
         }
 
-        // Funzione per cercare il valore di punteggio in varie possibili versioni di intestazione Excel
-        function getExcelPoints(row, possibiliNomi, defaultValore) {
-            for (let nome of possibiliNomi) {
-                if (row[nome] !== undefined && row[nome] !== null && row[nome] !== '') {
-                    let val = parseInt(row[nome]);
-                    if (!isNaN(val)) return val;
+        // FUNZIONI ROBUSTE PER LEGGERE L'EXCEL IGNORANDO SPAZI ED ERRORI DI BATTITURA NELLE INTESTAZIONI
+        function getExcelValue(row, possibleKeys, defaultValue) {
+            const normalizedRow = {};
+            // Normalizziamo tutte le chiavi dell'excel (tutto minuscolo e senza spazi ai bordi)
+            for (let k in row) {
+                normalizedRow[k.toString().trim().toLowerCase()] = row[k];
+            }
+            
+            // Cerchiamo la nostra chiave tra le opzioni possibili
+            for (let key of possibleKeys) {
+                let normKey = key.trim().toLowerCase();
+                if (normalizedRow[normKey] !== undefined && normalizedRow[normKey] !== null && normalizedRow[normKey] !== '') {
+                    return normalizedRow[normKey];
                 }
             }
-            return defaultValore;
+            return defaultValue;
+        }
+
+        function getExcelPoints(row, possibleKeys, defaultVal) {
+            let val = getExcelValue(row, possibleKeys, defaultVal);
+            let parsed = parseInt(val);
+            return isNaN(parsed) ? defaultVal : parsed;
         }
 
         window.handleExcelUpload = async function() {
@@ -353,26 +366,30 @@
                     return;
                 }
 
+                // Costruiamo i dati degli eventi in modo estremamente flessibile
                 window.eventsData = json.map((row, index) => {
                     return {
                         id: index + 1,
-                        data: row['Data'] || row['data'] || 'Data mancante',
-                        sport: row['Sport'] || row['sport'] || 'Sport',
-                        evento: row['Evento'] || row['evento'] || `Evento ${index + 1}`,
-                        A: row['Picking #Ⲁ'] || row['Picking Ⲁ'] || row['Picking #A'] || 'Atleta Ⲁ mancante',
-                        B: row['Picking #β'] || row['Picking β'] || row['Picking #B'] || 'Atleta β mancante',
-                        C: row['Picking #γ'] || row['Picking γ'] || row['Picking #C'] || 'Atleta γ mancante',
-                        field: row['Picking #field'] || row['Picking field'] || row['field'] || 'Field mancante',
-                        achievementA: row['Achievement Ⲁ'] || row['Achievement A'] || '',
-                        achievementB: row['Achievement β'] || row['Achievement B'] || '',
-                        achievementC: row['Achievement γ'] || row['Achievement C'] || '',
-                        numField: row['Numero Field'] || '',
+                        data: getExcelValue(row, ['data'], 'Data mancante'),
+                        sport: getExcelValue(row, ['sport'], 'Sport'),
+                        evento: getExcelValue(row, ['evento'], `Evento ${index + 1}`),
                         
-                        // Sistema di estrazione punteggi robusto: legge il valore (anche 0) 
-                        puntiA: getExcelPoints(row, ['Punti Ⲁ', 'Punti alfa', 'Punti A', 'Punti Alpha'], 15),
-                        puntiB: getExcelPoints(row, ['Punti β', 'Punti beta', 'Punti B', 'Punti Beta'], 18),
-                        puntiC: getExcelPoints(row, ['Punti γ', 'Punti gamma', 'Punti C', 'Punti Gamma'], 25),
-                        puntiField: getExcelPoints(row, ['Punti Field', 'Punti field'], 10)
+                        A: getExcelValue(row, ['picking #Ⲁ', 'picking Ⲁ', 'picking #a', 'picking a'], 'Atleta Ⲁ mancante'),
+                        B: getExcelValue(row, ['picking #β', 'picking β', 'picking #b', 'picking b'], 'Atleta β mancante'),
+                        C: getExcelValue(row, ['picking #γ', 'picking γ', 'picking #c', 'picking c'], 'Atleta γ mancante'),
+                        field: getExcelValue(row, ['picking #field', 'picking field', 'field'], 'Field mancante'),
+                        
+                        achievementA: getExcelValue(row, ['achievement Ⲁ', 'achievement a'], ''),
+                        achievementB: getExcelValue(row, ['achievement β', 'achievement b'], ''),
+                        achievementC: getExcelValue(row, ['achievement γ', 'achievement c'], ''),
+                        
+                        numField: getExcelValue(row, ['numero field', 'num field'], ''),
+                        
+                        // Ora i punti verranno letti al 100%
+                        puntiA: getExcelPoints(row, ['punti Ⲁ', 'punti alfa', 'punti a'], 15),
+                        puntiB: getExcelPoints(row, ['punti β', 'punti beta', 'punti b'], 18),
+                        puntiC: getExcelPoints(row, ['punti γ', 'punti gamma', 'punti c'], 25),
+                        puntiField: getExcelPoints(row, ['punti field'], 10)
                     };
                 });
 
@@ -410,7 +427,11 @@
             const disabledAttr = window.hasSubmittedFinal ? 'disabled' : '';
 
             window.eventsData.forEach((ev) => {
-                const preScelta = window.userSelections[ev.id]?.key || null;
+                let preScelta = window.userSelections[ev.id]?.key || null;
+                // Retrocompatibilità
+                if(preScelta === 'A') preScelta = 'Ⲁ';
+                if(preScelta === 'B') preScelta = 'β';
+                if(preScelta === 'C') preScelta = 'γ';
 
                 const div = document.createElement('div');
                 div.className = "bg-white p-5 rounded-xl shadow-md border-l-4 border-themeBlue mb-4";
@@ -550,7 +571,7 @@
 
             docPdf.setFont("helvetica", "bold");
             docPdf.setFontSize(18);
-            docPdf.setTextColor(2, 132, 199); // Blue theme color
+            docPdf.setTextColor(2, 132, 199); 
             docPdf.text("2026 World Championships - Riepilogo Pronostici", 14, 20);
 
             docPdf.setFontSize(11);
@@ -561,7 +582,15 @@
             let y = 45;
             docPdf.setFontSize(10);
             window.eventsData.forEach((ev) => {
-                const userSel = window.userSelections[ev.id];
+                let userSel = window.userSelections[ev.id];
+                
+                // Normalizza le lettere vecchie per chi scarica il PDF
+                if(userSel) {
+                    if(userSel.key === 'A') userSel.key = 'Ⲁ';
+                    if(userSel.key === 'B') userSel.key = 'β';
+                    if(userSel.key === 'C') userSel.key = 'γ';
+                }
+
                 const selText = userSel ? `[${userSel.key}] ${userSel.text}` : "Nessuna scelta";
                 
                 if(y > 270) {
@@ -636,12 +665,12 @@
                 div.className = "p-3 bg-gray-50 rounded border";
                 div.innerHTML = `
                     <p class="font-bold text-sm mb-1">${ev.id}. ${ev.evento}</p>
-                    <select id="correct_${ev.id}" class="w-full text-sm p-1 border rounded bg-white">
+                    <select id="correct_${ev.id}" class="w-full text-sm p-1 border rounded bg-white font-semibold">
                         <option value="">-- Seleziona Risposta Corretta --</option>
-                        <option value="Ⲁ">Picking Ⲁ (Valore: ${ev.puntiA} pt): ${ev.A}</option>
-                        <option value="β">Picking β (Valore: ${ev.puntiB} pt): ${ev.B}</option>
-                        <option value="γ">Picking γ (Valore: ${ev.puntiC} pt): ${ev.C}</option>
-                        <option value="field">Picking field (Valore: ${ev.puntiField} pt): ${ev.field}</option>
+                        <option value="Ⲁ">Picking Ⲁ (Valore: ${ev.puntiA} pt)</option>
+                        <option value="β">Picking β (Valore: ${ev.puntiB} pt)</option>
+                        <option value="γ">Picking γ (Valore: ${ev.puntiC} pt)</option>
+                        <option value="field">Picking field (Valore: ${ev.puntiField} pt)</option>
                     </select>
                 `;
                 container.appendChild(div);
@@ -672,7 +701,14 @@
             } else {
                 window.correctAnswers = JSON.parse(localStorage.getItem('correct_answers_astana') || "{}");
             }
+            
+            // Applica compatibilità se dal db cloud scendono ancora le vecchie A, B, C
             for(let id in window.correctAnswers) {
+                let ans = window.correctAnswers[id];
+                if(ans === 'A') window.correctAnswers[id] = 'Ⲁ';
+                if(ans === 'B') window.correctAnswers[id] = 'β';
+                if(ans === 'C') window.correctAnswers[id] = 'γ';
+                
                 const sel = document.getElementById(`correct_${id}`);
                 if(sel) sel.value = window.correctAnswers[id];
             }
@@ -694,10 +730,18 @@
             participantsList.forEach(p => {
                 let score = 0;
                 for(let evId in p.selections) {
-                    const userChoice = p.selections[evId].key;
-                    const correctChoice = window.correctAnswers[evId];
+                    // Normalizziamo sia la scelta utente che la risposta admin per sicurezza
+                    let userChoice = p.selections[evId].key;
+                    if(userChoice === 'A') userChoice = 'Ⲁ';
+                    if(userChoice === 'B') userChoice = 'β';
+                    if(userChoice === 'C') userChoice = 'γ';
+
+                    let correctChoice = window.correctAnswers[evId];
+                    if(correctChoice === 'A') correctChoice = 'Ⲁ';
+                    if(correctChoice === 'B') correctChoice = 'β';
+                    if(correctChoice === 'C') correctChoice = 'γ';
+
                     if(correctChoice && userChoice === correctChoice) {
-                        // Cerca l'evento per recuperare i punti esatti
                         const evData = window.eventsData.find(e => e.id == evId);
                         if(evData) {
                             if(correctChoice === 'Ⲁ') score += evData.puntiA;
@@ -740,9 +784,6 @@
             });
         }
         
-        // ==========================================
-        // FUNZIONE ESPORTA CON FOGLIO FORMULE AGGIORNATO
-        // ==========================================
         window.exportToGoogleSheets = function() {
             if(!window.lastParticipantsList || window.lastParticipantsList.length === 0) {
                 alert("Non ci sono dati da esportare!");
@@ -760,7 +801,7 @@
                 return name;
             }
 
-            // --- FOGLIO 1: CALCOLATORE AUTOMATICO (CON FORMULE EXCEL AGGIORNATE) ---
+            // --- FOGLIO 1: CALCOLATORE AUTOMATICO ---
             let dataCalc = [];
             let rigaNomiEventi = ["", ""];
             let rigaRisposteEsatte = ["RISPOSTE ESATTE -->", "Scrivi qui Ⲁ, β, γ o field"];
@@ -768,7 +809,11 @@
 
             window.eventsData.forEach(ev => {
                 rigaNomiEventi.push(`Ev. ${ev.id}: ${ev.evento}`);
-                rigaRisposteEsatte.push(window.correctAnswers[ev.id] || ""); 
+                let correctAns = window.correctAnswers[ev.id] || "";
+                if(correctAns === 'A') correctAns = 'Ⲁ';
+                if(correctAns === 'B') correctAns = 'β';
+                if(correctAns === 'C') correctAns = 'γ';
+                rigaRisposteEsatte.push(correctAns); 
                 rigaHeaderCalc.push(`Punti Ev. ${ev.id}`);
             });
 
@@ -791,7 +836,6 @@
                     let cellDati = `${col}${rowDati}`;
                     let cellRisposta = `${col}$2`;
                     
-                    // Ora i punteggi vengono presi dinamicamente dall'evento corrente
                     let formula = `IF(Chiavi_Risposte!${cellDati}="","",IF(Chiavi_Risposte!${cellDati}=${cellRisposta},IF(${cellRisposta}="Ⲁ",${ev.puntiA},IF(${cellRisposta}="β",${ev.puntiB},IF(${cellRisposta}="γ",${ev.puntiC},IF(${cellRisposta}="field",${ev.puntiField},0)))),0))`;
                     rigaGiocatore.push({ f: formula });
                 });
@@ -824,8 +868,11 @@
                 const stato = p.isDraft ? "In Bozza" : "Inviato";
                 let row = [p.nickname, stato];
                 window.eventsData.forEach(ev => {
-                    let sel = p.selections[ev.id];
-                    row.push(sel ? sel.key : "");
+                    let selKey = p.selections[ev.id] ? p.selections[ev.id].key : "";
+                    if(selKey === 'A') selKey = 'Ⲁ';
+                    if(selKey === 'B') selKey = 'β';
+                    if(selKey === 'C') selKey = 'γ';
+                    row.push(selKey);
                 });
                 dataChiavi.push(row);
             });
@@ -847,14 +894,25 @@
             content.innerHTML = '';
 
             for(let evId in part.selections) {
-                const sel = part.selections[evId];
-                const correct = window.correctAnswers[evId];
-                const isCorrect = correct && sel.key === correct;
+                let sel = part.selections[evId];
+                
+                // Normalizza le vecchie lettere se presenti
+                let userKey = sel.key;
+                if(userKey === 'A') userKey = 'Ⲁ';
+                if(userKey === 'B') userKey = 'β';
+                if(userKey === 'C') userKey = 'γ';
+
+                let correct = window.correctAnswers[evId];
+                if(correct === 'A') correct = 'Ⲁ';
+                if(correct === 'B') correct = 'β';
+                if(correct === 'C') correct = 'γ';
+
+                const isCorrect = correct && userKey === correct;
                 const div = document.createElement('div');
                 div.className = `p-2 rounded border ${isCorrect ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'}`;
                 div.innerHTML = `
                     <p class="font-bold text-xs text-gray-600">Evento #${evId}</p>
-                    <p class="text-sm">Scelta: <strong class="text-themeBlue">[${sel.key}]</strong> ${sel.text}</p>
+                    <p class="text-sm">Scelta: <strong class="text-themeBlue">[${userKey}]</strong> ${sel.text}</p>
                     ${correct ? `<p class="text-xs ${isCorrect ? 'text-blue-600 font-bold' : 'text-red-500'}">Esatta era: [${correct}]</p>` : ''}
                 `;
                 content.appendChild(div);

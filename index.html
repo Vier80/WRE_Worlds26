@@ -321,6 +321,17 @@
             document.getElementById('action-section').classList.remove('hidden');
         }
 
+        // Funzione per cercare il valore di punteggio in varie possibili versioni di intestazione Excel
+        function getExcelPoints(row, possibiliNomi, defaultValore) {
+            for (let nome of possibiliNomi) {
+                if (row[nome] !== undefined && row[nome] !== null && row[nome] !== '') {
+                    let val = parseInt(row[nome]);
+                    if (!isNaN(val)) return val;
+                }
+            }
+            return defaultValore;
+        }
+
         window.handleExcelUpload = async function() {
             const fileInput = document.getElementById('excel-file-input');
             if(!fileInput.files.length) {
@@ -342,24 +353,28 @@
                     return;
                 }
 
-                window.eventsData = json.map((row, index) => ({
-                    id: index + 1,
-                    data: row['Data'] || row['data'] || 'Data mancante',
-                    sport: row['Sport'] || row['sport'] || 'Sport',
-                    evento: row['Evento'] || row['evento'] || `Evento ${index + 1}`,
-                    A: row['Picking #Ⲁ'] || row['Picking Ⲁ'] || 'Atleta Ⲁ mancante',
-                    B: row['Picking #β'] || row['Picking β'] || 'Atleta β mancante',
-                    C: row['Picking #γ'] || row['Picking γ'] || 'Atleta γ mancante',
-                    field: row['Picking #field'] || row['Picking field'] || row['field'] || 'Field mancante',
-                    achievementA: row['Achievement Ⲁ'] || '',
-                    achievementB: row['Achievement β'] || '',
-                    achievementC: row['Achievement γ'] || '',
-                    numField: row['Numero Field'] || '',
-                    puntiA: parseInt(row['Punti Ⲁ']) || parseInt(row['Punti A']) || 15,
-                    puntiB: parseInt(row['Punti β']) || parseInt(row['Punti B']) || 18,
-                    puntiC: parseInt(row['Punti γ']) || parseInt(row['Punti C']) || 25,
-                    puntiField: parseInt(row['Punti Field']) || 10
-                }));
+                window.eventsData = json.map((row, index) => {
+                    return {
+                        id: index + 1,
+                        data: row['Data'] || row['data'] || 'Data mancante',
+                        sport: row['Sport'] || row['sport'] || 'Sport',
+                        evento: row['Evento'] || row['evento'] || `Evento ${index + 1}`,
+                        A: row['Picking #Ⲁ'] || row['Picking Ⲁ'] || row['Picking #A'] || 'Atleta Ⲁ mancante',
+                        B: row['Picking #β'] || row['Picking β'] || row['Picking #B'] || 'Atleta β mancante',
+                        C: row['Picking #γ'] || row['Picking γ'] || row['Picking #C'] || 'Atleta γ mancante',
+                        field: row['Picking #field'] || row['Picking field'] || row['field'] || 'Field mancante',
+                        achievementA: row['Achievement Ⲁ'] || row['Achievement A'] || '',
+                        achievementB: row['Achievement β'] || row['Achievement B'] || '',
+                        achievementC: row['Achievement γ'] || row['Achievement C'] || '',
+                        numField: row['Numero Field'] || '',
+                        
+                        // Sistema di estrazione punteggi robusto: legge il valore (anche 0) 
+                        puntiA: getExcelPoints(row, ['Punti Ⲁ', 'Punti alfa', 'Punti A', 'Punti Alpha'], 15),
+                        puntiB: getExcelPoints(row, ['Punti β', 'Punti beta', 'Punti B', 'Punti Beta'], 18),
+                        puntiC: getExcelPoints(row, ['Punti γ', 'Punti gamma', 'Punti C', 'Punti Gamma'], 25),
+                        puntiField: getExcelPoints(row, ['Punti Field', 'Punti field'], 10)
+                    };
+                });
 
                 if(isFirebaseActive && db) {
                     try {
@@ -776,7 +791,7 @@
                     let cellDati = `${col}${rowDati}`;
                     let cellRisposta = `${col}$2`;
                     
-                    // Ora i punteggi vengono presi dinamicamente dall'evento corrente (non più fissi)
+                    // Ora i punteggi vengono presi dinamicamente dall'evento corrente
                     let formula = `IF(Chiavi_Risposte!${cellDati}="","",IF(Chiavi_Risposte!${cellDati}=${cellRisposta},IF(${cellRisposta}="Ⲁ",${ev.puntiA},IF(${cellRisposta}="β",${ev.puntiB},IF(${cellRisposta}="γ",${ev.puntiC},IF(${cellRisposta}="field",${ev.puntiField},0)))),0))`;
                     rigaGiocatore.push({ f: formula });
                 });
